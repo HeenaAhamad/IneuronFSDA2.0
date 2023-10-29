@@ -1,0 +1,70 @@
+CREATE DATABASE AMAZON;
+
+USE AMAZON;
+
+SELECT * FROM amazon.amazon_seller;
+
+SELECT *, substring_index(sellerproductcount,' ',4) AS PRODUCT_COUNT FROM amazon.amazon_seller WHERE sellerproductcount LIKE '%100,000%' ; 
+
+SELECT substring(sellerproductcount, LOCATE('100,000',sellerproductcount) - 1,16) AS SELLERPRODUCT_COUNT FROM amazon.amazon_seller WHERE sellerproductcount LIKE '%100,000%' ; 
+
+SELECT substring(sellerratings, LOCATE('98%',sellerratings) - 25,25) AS SELLERPRODUCT_COUNT FROM amazon.amazon_seller WHERE sellerproductcount LIKE '%100,000%' ; 
+
+ALTER TABLE `amazon`.`amazon_seller` 
+CHANGE COLUMN `Hero Product 1 #ratings` `Hero_Product_1` TEXT NULL DEFAULT NULL ;
+
+ALTER TABLE `amazon`.`amazon_seller` 
+CHANGE COLUMN `Hero Product 2 #ratings` `Hero_Product_2` TEXT NULL DEFAULT NULL ;
+
+ALTER TABLE `amazon`.`amazon_seller` 
+CHANGE COLUMN `Sample brand name` `Sample_brand_name` TEXT NULL DEFAULT NULL ;
+
+SELECT category, Sample_brand_name , substring(sellerproductcount, LOCATE('100,000',sellerproductcount) - 1,16) AS SELLERPRODUCT_COUNT, 
+sellerratings, 
+CONCAT(SUBSTRING_INDEX(SUBSTRING_INDEX(sellerdetails,'@',1),' ',-2), SUBSTRING_INDEX(SUBSTRING_INDEX (sellerdetails, SUBSTRING_INDEX(sellerdetails,'@',1),-1), ' ',1)) AS FORMATTED_EMAIL,
+REGEXP_REPLACE(sellerdetails, '[^0-9]', '') formatted_phone_no,
+RIGHT(businessaddress, 2) AS UPDATED_BA,
+Hero_Product_1,
+Hero_Product_2 
+FROM amazon.amazon_seller 
+WHERE sellerproductcount LIKE '%100,000%' ;
+
+ 
+WITH AMAZON_S 
+AS
+(SELECT category, Sample_brand_name , substring(sellerproductcount, LOCATE('100,000',sellerproductcount) - 1,16) AS SELLERPRODUCT_COUNT, 
+sellerratings, 
+CONCAT(SUBSTRING_INDEX(SUBSTRING_INDEX(sellerdetails,'@',1),' ',-2), SUBSTRING_INDEX(SUBSTRING_INDEX (sellerdetails, SUBSTRING_INDEX(sellerdetails,'@',1),-1), ' ',1)) AS FORMATTED_EMAIL,
+REGEXP_REPLACE(sellerdetails, '[^0-9]', '') formatted_phone_no,
+RIGHT(businessaddress, 2) AS UPDATED_BA,
+Hero_Product_1,
+Hero_Product_2 
+FROM amazon.amazon_seller 
+WHERE sellerproductcount LIKE '%100,000%' )
+SELECT *
+FROM
+AMAZON_S
+ORDER BY HERO_PRODUCT_1 DESC, HERO_PRODUCT_2 DESC;
+
+CREATE TABLE HF_AMAZON 
+AS
+(SELECT category, Sample_brand_name , substring(sellerproductcount, LOCATE('100,000',sellerproductcount) - 1,16) AS SELLERPRODUCT_COUNT, 
+sellerratings, 
+CONCAT(SUBSTRING_INDEX(SUBSTRING_INDEX(sellerdetails,'@',1),' ',-2), SUBSTRING_INDEX(SUBSTRING_INDEX (sellerdetails, SUBSTRING_INDEX(sellerdetails,'@',1),-1), ' ',1)) AS FORMATTED_EMAIL,
+REGEXP_REPLACE(sellerdetails, '[^0-9]', '') formatted_phone_no,
+RIGHT(businessaddress, 2) AS UPDATED_BA,
+Hero_Product_1,
+Hero_Product_2 
+FROM amazon.amazon_seller 
+WHERE sellerproductcount LIKE '%100,000%' 
+ORDER BY HERO_PRODUCT_1 DESC, HERO_PRODUCT_2 DESC);
+
+SELECT * FROM HF_AMAZON;
+
+SELECT *
+FROM  HF_AMAZON
+INTO OUTFILE 'C:/Users/Admin/Downloads/myoutput.txt'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n';
+
